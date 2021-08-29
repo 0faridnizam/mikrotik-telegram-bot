@@ -36,9 +36,9 @@ Sekarang kita akan test apakah script "tg_SendMessage" mau berkerja apa tidak?, 
 ```mikrotik
 :local DeviceName [/system identity get name];
 
-:local MessageText "\F0\9F\9F\A2 <b>$DeviceName:</b> <i>italic</i>  <code>inline fixed-width code</code> plain text <a href=\"https://github.com/yuimatcha">More Scripts</a>";
+:local MessageText "\F0\9F\9F\A2 Mikrotik: $DeviceName%0A<b>bold</b>%0A<i>italic</i>%0A<u>underline</u>%0A<s>strikethrough</s>%0A<code>inline fixed-width code</code>%0A<pre>pre-formatted fixed-width code block</pre>";
 
-:local SendTelegramMessage [:parse [/system script  get MyTGBotSendMessage source]];
+:local SendTelegramMessage [:parse [/system script get tg_SendMessage source]];
 
 $SendTelegramMessage MessageText=$MessageText;
 ```
