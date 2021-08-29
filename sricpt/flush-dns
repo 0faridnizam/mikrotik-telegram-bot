@@ -1,0 +1,10 @@
+:local DeviceName [/system identity get name] ;
+:local BeforeCacheUsed [/ip dns get cache-used] ;
+/ip dns cache flush
+:local CacheUsed [/ip dns get cache-used] ;
+
+:local MessageText "\E2\9D\A3 <b>$DeviceName :</b> <u><b>Flush DNS</b></u>%0A<pre>Before Cache Used : $BeforeCacheUsed KiB%0AAfter Cache Used  : $CacheUsed KiB</pre>";
+
+:local SendTelegramMessage [:parse [/system script  get tg_SendMessage source]];
+
+$SendTelegramMessage MessageText=$MessageText;

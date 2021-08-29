@@ -1,0 +1,30 @@
+#####################################################
+PPPoE On UP
+#####################################################
+:local nama "$user";
+:local ips [/ppp active get [find name=$nama] address];
+:local up [/ppp active get [find name=$nama] uptime];
+:local caller [/ppp active get [find name=$nama] caller-id];
+:local service [/ppp active get [find name=$nama] service];
+:local profile [/ppp secret get [find name=$nama] profile];
+:local active [/ppp active print count];
+
+:local MessageText "\F0\9F\92\99 <b>LOGIN PPP</b> \F0\9F\92\99%0A-------------------------------------------------------%0A\F0\9F\94\B8 User : $user%0A\F0\9F\94\B8 IP Address : $ips%0A\F0\9F\94\B8 Caller ID : $caller%0A-------------------------------------------------------%0A\F0\9F\94\A7 Service : $service %0A\F0\9F\94\97 Profile : $profile%0A\F0\9F\91\AA Total Active : $active%0A";
+
+:local SendTelegramMessage [:parse [/system script get tg_SendMessage source]];
+$SendTelegramMessage MessageText=$MessageText;
+
+#####################################################
+PPPoE On Down
+#####################################################
+:local nama "$user";
+:local service [/ppp secret get [find name=$nama] service];
+:local local [/ppp secret get [find name=$nama] local];
+:local remote [/ppp secret get [find name=$nama] remote];
+:local profile [/ppp secret get [find name=$nama] profile];
+:local last [/ppp secret get [find name=$nama] last];
+
+:local MessageText "\F0\9F\92\94 <b>LOGOUT PPP</b> \F0\9F\92\94%0A-------------------------------------------------------%0A\F0\9F\94\B9 User : $user%0A\F0\9F\94\B9 Profile : $profile%0A\F0\9F\94\B9 Service : $service%0A-------------------------------------------------------%0A\F0\9F\95\91 Last Logout : $last%0A";
+
+:local SendTelegramMessage [:parse [/system script get tg_SendMessage source]];
+$SendTelegramMessage MessageText=$MessageText;

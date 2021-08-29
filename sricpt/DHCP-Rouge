@@ -1,0 +1,26 @@
+##################################
+DHCP Alerts
+##################################
+:local CurrentTime [/system clock get time];
+:local MsgID [/log find where message ~"dhcp alert" time =$CurrentTime];
+:local MsgText [/log get number=$MsgID message];
+:local DeviceName [/system identity get name];
+
+:local MessageText "\F0\9F\94\B4 <b>DHCP Rogue Terdeteksi</b> \F0\9F\94\B4%0A-------------------------------------------------------%0A\F0\9F\95\92 : $CurrentTime%0A\F0\9F\93\A2 : $MsgText";
+:local SendTelegramMessage [:parse [/system script  get tg_SendMessage source]];
+$SendTelegramMessage MessageText=$MessageText;
+
+
+######
+v.2
+######
+
+:local output
+:foreach activeIndex in=[/ip dhcp-server alert find comment=lan1] do={
+:local interface [/ip dhcp-server alert get value-name="interface" $activeIndex];
+:local valid [/ip dhcp-server alert get value-name="valid" $activeIndex];
+:local rouge [/ip dhcp-server alert get value-name="unknown-server" $activeIndex];
+
+:local MessageText "\F0\9F\94\B4 <b>DHCP Rogue Terdeteksi</b> \F0\9F\94\B4%0A-------------------------------------------------------%Interface: $interface %0AValid MAC: $valid %0AMAC Rouge: $rouge";
+:local SendTelegramMessage [:parse [/system script  get tg_SendMessage source]];
+$SendTelegramMessage MessageText=$MessageText;

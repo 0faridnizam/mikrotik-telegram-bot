@@ -1,0 +1,154 @@
+#################################################################
+DNS Healty Check V.1
+#################################################################
+
+# Telegram
+:local TokenBot "1931662916:AAFPMgGXB-7ZxOQTj47gkToBmwGck6oEhlo";
+:local ChatID "-1001477550059";
+# DNS
+:local PrimaryDNS "10.8.12.2";
+:local BackupDNS "8.8.8.8,64.6.64.6";
+# 
+:local TestDomain "detik.com";
+:local MessagePrimary "Primary DNS $PrimaryDNS is DOWN.\r\nDNS configuration changed to backup DNS $BackupDNS.";
+:local MessageSecondary "Primary DNS $PrimaryDNS is UP.\r\nOriginal DNS configuration restored.";
+#                                          #
+#  JANGAN DI UBAH LAGI  #
+#   BIAR ENGGAK ERROR   #
+#                                          #
+:local sysname [/system identity get name];
+:local ConfiguredDNS [/ip dns get servers];
+
+###### Konfigurasi Primary DNS
+:if ($PrimaryDNS = $ConfiguredDNS) do={
+    :do {
+        # Test resolve
+        :put [:resolve $TestDomain server $ConfiguredDNS];
+
+        # Syslog messages
+        # /log info "Primary DNS $PrimaryDNS healthcheck completed, no issues";
+        
+    } on-error={ 
+        :put "resolver failed";
+        # Syslog messages
+        /log info "name resolution using primary DNS $PrimaryDNS failed";
+        /log info "temporary setting backup DNS $BackupDNS as primary";
+
+        # Konfigurasi DNS ke Backup DNS
+        /ip dns set servers=$BackupDNS;
+        /ip dns cache flush;
+
+        # Firewall NAT (disable) untuk memaksa DNS
+        /ip firewall nat disable [find comment="DNS" disabled=no];
+
+        # Send notification ke telegram
+        /tool fetch url="https://api.telegram.org/bot$TokenBot/sendMessage?chat_id=$ChatID&text=$MessagePrimary" keep-result=no;
+        /log info "notification telegram sent";
+    }
+}
+
+###### Konfigurasi Backup DNS
+:if ($BackupDNS = $ConfiguredDNS) do={
+    :do {
+        # Test resolve
+        :put [:resolve $TestDomain server $PrimaryDNS];
+
+        # Syslog messages
+        /log info "name resolution using primary DNS $PrimaryDNS working now";
+        /log info "restoring original DNS configuration";
+
+        # Konfigurasi DNS ke Primary DNS
+        /ip dns set servers=$PrimaryDNS;
+        /ip dns cache flush;
+
+        # Firewall NAT (enable) untuk memaksa DNS
+        /ip firewall nat enable [find comment="DNS" disabled=yes];
+
+        # Send notification ke telegram
+        /tool fetch url="https://api.telegram.org/bot$TokenBot/sendMessage?chat_id=$ChatID&text=$MessageSecondary" keep-result=no;
+        /log info "notification telegram sent";
+        
+    } on-error={
+        :put "resolver failed";
+        # Syslog messages
+        /log info "system is configured with backup DNS $BackupDNS";
+        /log info "Primary DNS $PrimaryDNS is still down.";
+    }
+}
+
+#################################################################
+DNS Healty Check V.1.2 (Cuma Ubah Bagian Kirim Telegram)
+#################################################################
+
+# DNS
+:local PrimaryDNS "10.8.12.2";
+:local BackupDNS "8.8.8.8,64.6.64.6";
+# 
+:local TestDomain "detik.com";
+:local MessagePrimary "Primary DNS $PrimaryDNS is DOWN.\r\nDNS configuration changed to backup DNS $BackupDNS.";
+:local MessageSecondary "Primary DNS $PrimaryDNS is UP.\r\nOriginal DNS configuration restored.";
+#                                          #
+#  JANGAN DI UBAH LAGI  #
+#   BIAR ENGGAK ERROR   #
+#                                          #
+:local sysname [/system identity get name];
+:local ConfiguredDNS [/ip dns get servers];
+
+###### Konfigurasi Primary DNS
+:if ($PrimaryDNS = $ConfiguredDNS) do={
+    :do {
+        # Test resolve
+        :put [:resolve $TestDomain server $ConfiguredDNS];
+
+        # Syslog messages
+        # /log info "Primary DNS $PrimaryDNS healthcheck completed, no issues";
+        
+    } on-error={ 
+        :put "resolver failed";
+        # Syslog messages
+        /log info "name resolution using primary DNS $PrimaryDNS failed";
+        /log info "temporary setting backup DNS $BackupDNS as primary";
+
+        # Konfigurasi DNS ke Backup DNS
+        /ip dns set servers=$BackupDNS;
+        /ip dns cache flush;
+
+        # Firewall NAT (disable) untuk memaksa DNS
+        /ip firewall nat disable [find comment="DNS" disabled=no];
+
+        # Kirim notification ke telegram		
+		:local MessageText "$MessagePrimary";
+		:local SendTelegramMessage [:parse [/system script  get tg_SendMessage source]];
+		$SendTelegramMessage MessageText=$MessageText;
+    }
+}
+
+###### Konfigurasi Backup DNS
+:if ($BackupDNS = $ConfiguredDNS) do={
+    :do {
+        # Test resolve
+        :put [:resolve $TestDomain server $PrimaryDNS];
+
+        # Syslog messages
+        /log info "name resolution using primary DNS $PrimaryDNS working now";
+        /log info "restoring original DNS configuration";
+
+        # Konfigurasi DNS ke Primary DNS
+        /ip dns set servers=$PrimaryDNS;
+        /ip dns cache flush;
+
+        # Firewall NAT (enable) untuk memaksa DNS
+        /ip firewall nat enable [find comment="DNS" disabled=yes];
+
+        # Send notification ke telegram
+		:local MessageText "$MessageSecondary";
+		:local SendTelegramMessage [:parse [/system script  get tg_SendMessage source]];
+		$SendTelegramMessage MessageText=$MessageText;
+        
+    } on-error={
+        :put "resolver failed";
+        # Syslog messages
+        /log info "system is configured with backup DNS $BackupDNS";
+        /log info "Primary DNS $PrimaryDNS is still down.";
+    }
+}
