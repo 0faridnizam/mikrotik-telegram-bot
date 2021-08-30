@@ -3,8 +3,8 @@ DNS Healty Check V.1
 #################################################################
 
 # Telegram
-:local TokenBot "1931662916:AAFPMgGXB-7ZxOQTj47gkToBmwGck6oEhlo";
-:local ChatID "-1001477550059";
+:local TokenBot "TOKEN-BOT-KAMU";
+:local ChatID "CHAT-ID-KAMU";
 # DNS
 :local PrimaryDNS "10.8.12.2";
 :local BackupDNS "8.8.8.8,64.6.64.6";
